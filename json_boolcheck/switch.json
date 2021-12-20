@@ -1,0 +1,5 @@
+{
+    "switch_theme" : "default",
+    "check_bool" : true,
+    "check_int" : 500
+}

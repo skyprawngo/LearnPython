@@ -1,0 +1,8 @@
+{
+    "python.analysis.extraPaths": [
+        "./case1/module1.py"
+    ],
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.pycodestyleEnabled": false
+}
