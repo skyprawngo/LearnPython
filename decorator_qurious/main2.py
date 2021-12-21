@@ -10,6 +10,6 @@ class class1:
 
     @decorator
     def example1(arg1):
-        print("example1함수출력")
+        print(arg1,"example1함수출력")
 
 class1.example1("asd")
