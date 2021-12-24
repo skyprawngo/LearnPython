@@ -1,63 +1,32 @@
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
-
+"""
+Test Qt Frameless Window resizing with QSizeGrip
+Maxwell Grady, September 2017.
+"""
 import sys
+from PySide6 import QtCore, QtWidgets
+from qtmodern.styles import light
+from qtmodern.windows import ModernWindow
 
-class Grip(QLabel):
-    def __init__(self, parent, move_widget):
-        super(Grip, self).__init__(parent)
-        self.move_widget = move_widget
-        self.setText("+")
-        self.min_height = 50
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    light(app)  # qtmodern
 
-        self.mouse_start = None
-        self.height_start = self.move_widget.height()
-        self.resizing = False
-        self.setMouseTracking(True)
+    window = QtWidgets.QWidget()
 
+    # if you are not using qtmodern darkstyle, you can still make the QWidget resizeable and frameless by uncommenting the code below then commenting out the qtmodern code
 
-    def showEvent(self, event):
-        super(Grip, self).showEvent(event)
-        self.reposition()
+    flags = QtCore.Qt.WindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+    window.setWindowFlags(flags)
+    window.setGeometry(QtCore.QRect(300, 300, 640, 480))  # arbitrary size/location
 
-    def mousePressEvent(self, event):
-        super(Grip, self).mousePressEvent(event)
-        self.resizing = True
-        self.height_start = self.move_widget.height()
-        self.mouse_start = event.pos()
+    layout = QtWidgets.QVBoxLayout()
+    sizegrip = QtWidgets.QSizeGrip(window)
+    layout.addWidget(sizegrip, 0, QtCore.Qt.AlignBottom | QtCore.Qt.AlignRight)
+    window.setLayout(layout)
 
-    def mouseMoveEvent(self, event):
-        super(Grip, self).mouseMoveEvent(event)
-        if self.resizing:
-            delta = event.pos() - self.mouse_start
-            height = self.height_start + delta.y()
-            if height > self.min_height:
-                self.move_widget.setFixedHeight(height)
-            else:
-                self.move_widget.setFixedHeight(self.min_height)
+    # mw = ModernWindow(window)  # qtmodern
+    window.show()
+    sys.exit(app.exec_())
 
-            #self.reposition()                                       # <-  ---
-
-    def mouseReleaseEvent(self, event):
-        super(Grip, self).mouseReleaseEvent(event)
-        self.resizing = False
-
-        self.reposition()  
-
-    def reposition(self):
-        rect = self.move_widget.geometry()
-        self.move(rect.right(), rect.bottom())
-
-
-class Dialog(QDialog):
-    def __init__(self):
-        super(Dialog, self).__init__()
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-        list_widget = QListWidget()
-        layout.addWidget(list_widget)
-        gripper = Grip(self, list_widget)
-
-        layout.addWidget(QLabel("Test"))
-
-        self.setGeometry(200, 500, 200, 500)
+if __name__ == '__main__':
+    main()

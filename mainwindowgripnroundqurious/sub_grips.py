@@ -16,10 +16,10 @@ class MyApp(QMainWindow):
 
     def init_UI(self):
         self.setWindowFlag(Qt.FramelessWindowHint)
+        self.resize(1000,600)
 
         self.widget_1 = QWidget()
         self.widget_1_layout = QVBoxLayout(self.widget_1)
-        self.resize(1000,600)
         self.widget_2 = Grip(self.widget_1, self)
 
         self.widget_1_layout.addWidget(self.widget_2)
