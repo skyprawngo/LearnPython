@@ -95,6 +95,7 @@ class PyGrips(QWidget):
             # RESIZE TOP
             def resize_top(event):
                 delta = event.pos()
+                # print(delta)
                 height = max(self.parent.minimumHeight(), self.parent.height() - delta.y())
                 geo = self.parent.geometry()
                 geo.setTop(geo.bottom() - height)
@@ -117,6 +118,7 @@ class PyGrips(QWidget):
             def resize_bottom(event):
                 delta = event.pos()
                 height = max(self.parent.minimumHeight(), self.parent.height() + delta.y())
+                
                 self.parent.resize(self.parent.width(), height)
                 event.accept()
             self.wi.bottom_grip.mouseMoveEvent = resize_bottom
