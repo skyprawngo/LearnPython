@@ -1,3 +1,4 @@
 learnenv/
+learnvenv/
 __pycache__
 *.pyc
