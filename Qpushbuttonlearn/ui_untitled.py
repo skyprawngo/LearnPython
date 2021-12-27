@@ -7,6 +7,7 @@
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
+import sys
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
@@ -115,3 +116,10 @@ class Ui_MainWindow(object):
         self.b3.setText(QCoreApplication.translate("MainWindow", u"b3", None))
     # retranslateUi
 
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+
+    window = MainWindow()
+    window.show()
+    app.exec()
