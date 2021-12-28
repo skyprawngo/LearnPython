@@ -1,4 +1,5 @@
-learnenv/
+venv39/
+
 .qt_for_python/
 __pycache__
 *.pyc
