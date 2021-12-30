@@ -10,15 +10,19 @@ from PySide6.QtWidgets import (QApplication, QFrame, QLabel, QMainWindow,
 
 class custom_btn(QPushButton):
     emit_btn_name = Signal(str)
-    def __init__(self):
+    def __init__(
+        self,
+        i
+    ):
         super().__init__()
         self.setObjectName(u"Button123")
-        self.setText("btn_123")
+        
+        text = "btn_123: " + str(i)
+        self.setObjectName(text)
+        self.setText(text)
         self.emit_btn_name = self.text
         self.clicked.emit()
-    def is_clicked(self):
-        self.clicked.emit()
-        self.emit_btn_name
+        
         
 
 class Ui_MainWindow(QMainWindow):
@@ -26,11 +30,19 @@ class Ui_MainWindow(QMainWindow):
         super(Ui_MainWindow, self).__init__()
         self.setupUi(self)
     
-    def slot(self, btn_name):
-        print("asdf")
-        print(btn_name)
-        pass
+    def slot(self):
+        button = self.sender()
+        if button.objectName() == "btn_123: 0":
+            print(button.text())
+        if button.objectName() == "btn_123: 1":
+            print(button.objectName())
+        if button.objectName() == "btn_123: 2":
+            print(button.objectName())
+        if button.objectName() == "btn_123: 3":
+            print(button.objectName())
         
+        
+    
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
@@ -40,10 +52,13 @@ class Ui_MainWindow(QMainWindow):
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
 
-        self.pushButton = custom_btn()
-        self.pushButton.is_clicked
+        for i in range(4):
+            self.pushButton = custom_btn(
+                i
+            )
+            self.pushButton.clicked.connect(self.slot)
 
-        self.verticalLayout.addWidget(self.pushButton)
+            self.verticalLayout.addWidget(self.pushButton)
 
         MainWindow.setCentralWidget(self.centralwidget)
 
