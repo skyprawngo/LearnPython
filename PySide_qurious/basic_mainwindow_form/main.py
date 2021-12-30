@@ -9,7 +9,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication()
-    window = QMainWindow() 
+    window = QMainWindow()
     window.show()
     app.exec()
     
