@@ -6,7 +6,7 @@ from PySide6.QtGui import *
 from PySide6.QtCore import *
 from PySide6.QtSvgWidgets import *
 
-from btn_1 import Btn_1
+from label_emerged_btn_1 import Btn_1
 
 class MyApp(QMainWindow):
     def __init__(self):
