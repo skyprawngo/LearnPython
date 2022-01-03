@@ -16,6 +16,9 @@ asd = [
     }
 ]
 
+print(len(asd))
+
 for i in asd:
     print(i["a"])
     print(type(i))
+    
