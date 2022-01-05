@@ -1,106 +1,58 @@
-
-#!/usr/bin/env python2
-
-import sys, time
+import time
+from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
-from PySide6.QtWidgets import *
 
-class MySignal(QObject):
-        sig = Signal(str)
-
-class MyLongThread(QThread):
-        def __init__(self, parent = None):
-                QThread.__init__(self, parent)
-                self.exiting = False
-                self.signal = MySignal()
-
-        def run(self):
-                end = time.time()+10
-                while self.exiting==False:
-                        sys.stdout.write('*')
-                        sys.stdout.flush()
-                        time.sleep(1)
-                        now = time.time()
-                        if now>=end:
-                                self.exiting=True
-                self.signal.sig.emit('OK')
-
+class Btn_Push(QPushButton):
+    clicked = Signal(object)
+    def __init__(self):
+        super().__init__()
+        self.setText("쓰레드 실행 버튼")
+        self.mythread = MyThread(self)
+        self.clicked.connect(self.toggle)
+        pass
+    
+    def toggle(self):
+        if not self.mythread.func_run:
+            self.mythread.func_run = True
+            self.mythread.run()
+        elif self.mythread.func_run:
+            self.mythread.func_run = False
+            
+    pass
 class MyThread(QThread):
-        def __init__(self, parent = None):
-                QThread.__init__(self, parent)
-                self.exiting = False
+    signal = Signal()
+    def __init__(self, parent):
+        super().__init__()
+        self._parent = parent
+        self.func_run = False
+        pass
 
-        def run(self):
-                while self.exiting==False:
-                        sys.stdout.write('.')
-                        sys.stdout.flush()
-                        time.sleep(1)
-
+    def run(self):
+        self.check = 0
+        print(self.func_run)
+        while self.func_run == True:
+            if self.check >= 5:
+                break
+            print("진행중!")
+            time.sleep(1) 
+            self.check += 1
+    pass
 class MainWindow(QMainWindow):
-        def __init__(self, parent=None):
-                QMainWindow.__init__(self,parent)
-                self.centralwidget = QWidget(self)
-                self.batchbutton = QPushButton('Start batch',self)
-                self.longbutton = QPushButton('Start long (10 seconds) operation',self)
-                self.label1 = QLabel('Continuos batch')
-                self.label2 = QLabel('Long batch')
-                self.vbox = QVBoxLayout()
-                self.vbox.addWidget(self.batchbutton)
-                self.vbox.addWidget(self.longbutton)
-                self.vbox.addWidget(self.label1)
-                self.vbox.addWidget(self.label2)
-                self.setCentralWidget(self.centralwidget)
-                self.centralwidget.setLayout(self.vbox)
-                self.thread = MyThread()
-                self.longthread = MyLongThread()
-                self.batchbutton.clicked.connect(self.handletoggle)
-                self.longbutton.clicked.connect(self.longoperation)
-                self.thread.started.connect(self.started)
-                self.thread.finished.connect(self.finished)
-                self.longthread.signal.sig.connect(self.longoperationcomplete)
 
-        def started(self):
-                self.label1.setText('Continuous batch started')
+    def __init__(self):
+        super(MainWindow, self).__init__()
+        self.Frame = QFrame()
+        self.Frame.setStyleSheet("background-color: darkgray;")
+        self.vlayout = QVBoxLayout(self.Frame)
+        self.btn_push = Btn_Push()
+        self.vlayout.addWidget(self.btn_push)
+        self.btn_1 = QPushButton("가짜 버튼")
+        self.vlayout.addWidget(self.btn_1)
+        self.setCentralWidget(self.Frame)
 
-        def finished(self):
-                self.label1.setText('Continuous batch stopped')
-
-        def terminated(self):
-                self.label1.setText('Continuous batch terminated')
-
-        def handletoggle(self):
-                if self.thread.isRunning():
-                        self.thread.exiting=True
-                        self.batchbutton.setEnabled(False)
-                        while self.thread.isRunning():
-                                time.sleep(0.01)
-                                continue
-                        self.batchbutton.setText('Start batch')
-                        self.batchbutton.setEnabled(True)
-                else:
-                        self.thread.exiting=False
-                        self.thread.start()
-                        self.batchbutton.setEnabled(False)
-                        while not self.thread.isRunning():
-                                time.sleep(0.01)
-                                continue
-                        self.batchbutton.setText('Stop batch')
-                        self.batchbutton.setEnabled(True)
-
-        def longoperation(self):
-                if not self.longthread.isRunning():
-                        self.longthread.exiting=False
-                        self.longthread.start()
-                        self.label2.setText('Long operation started')
-                        self.longbutton.setEnabled(False)
-
-        def longoperationcomplete(self,data):
-                self.label2.setText('Long operation completed with: '+data)
-                self.longbutton.setEnabled(True)
-
-if __name__=='__main__':
-        app = QApplication(sys.argv)
-        window = MainWindow()
-        window.show()
-        app.exec()
+if __name__ == "__main__":
+    app = QApplication()
+    window = MainWindow()
+    window.show()
+    app.exec()
