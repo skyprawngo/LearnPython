@@ -8,7 +8,29 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QFrame, QLabel, QMainWindow,
     QPushButton, QSizePolicy, QVBoxLayout, QWidget)
 
+
+class custom_widget(QWidget):
+    def __init__(
+        self,
+    ):
+        super().__init__()
+        self.setup_Ui()
+        pass
+    
+    def setup_Ui(self):
+        self._layout = QVBoxLayout(self)
+        self.label = QLabel()
+        self.label.setText("asd")
+        self.label.setStyleSheet("background-color: darkgray;")
+        self._layout.addWidget(self.label)
+        
+    
+    def slot(self):
+        self.label.setText(self.emit_information)
+        print(self.emit_information2)
+        
 class custom_btn(QPushButton):
+    signal = Signal()
     def __init__(
         self,
         i
@@ -20,25 +42,18 @@ class custom_btn(QPushButton):
         self.setObjectName(text)
         self.setText(text)
         self.emit_btn_name = self.text
+        self.emit_information = text
         self.clicked.emit()
+        self.pressed.connect(self.press_emit)
+        
+    def press_emit(self):
+        emit_information2 = "aaaaa"
+        self.signal.emit(self.emit_information, emit_information2)
         
 class Ui_MainWindow(QMainWindow):
     def __init__(self):
-        super(Ui_MainWindow, self).__init__()
+        super().__init__()
         self.setupUi(self)
-    
-    def slot(self):
-        button = self.sender()
-        if button.objectName() == "btn_123: 0":
-            print(button.text())
-        if button.objectName() == "btn_123: 1":
-            print(button.objectName())
-        if button.objectName() == "btn_123: 2":
-            print(button.objectName())
-        if button.objectName() == "btn_123: 3":
-            print(button.objectName())
-        
-        
     
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
@@ -49,24 +64,17 @@ class Ui_MainWindow(QMainWindow):
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
 
+        self.label_widget = custom_widget()
+        self.verticalLayout.addWidget(self.label_widget)
+        
         for i in range(4):
             self.pushButton = custom_btn(
                 i
             )
-            self.pushButton.clicked.connect(self.slot)
-
             self.verticalLayout.addWidget(self.pushButton)
 
         MainWindow.setCentralWidget(self.centralwidget)
-
-        self.retranslateUi(MainWindow)
-
         QMetaObject.connectSlotsByName(MainWindow)
-    # setupUi
-
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-    # retranslateUi
 
 if __name__ == "__main__":
     app = QApplication()
