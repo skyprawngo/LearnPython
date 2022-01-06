@@ -3,6 +3,25 @@ from PySide6.QtGui import *
 from PySide6.QtCore import *
 from PySide6.QtWidgets import *
 
+class custom_label(QLabel):
+    def __init__(self):
+        super().__init__()
+        self.setup_Ui()
+    
+    def setup_Ui(self):
+        self._layout = QVBoxLayout(self)
+        self.label = QLabel()
+        self.label.setText("custom_label")
+        self._layout.addWidget(self.label)
+        
+        # MyLongThread에서 run 작동이 끝나서 발송한 emit에서
+        # MainWindow를 거치지 않고 information인 "OK"를
+        # custom_label에서 setText로 출력하는 방법 
+        self.connect
+
+    def slot(self):
+        self.label.setText(self.information)
+
 
 class MyLongThread(QThread):
     signal = Signal(str)
@@ -19,7 +38,7 @@ class MyLongThread(QThread):
             now = time.time()
             if now>=end:
                     self.exiting=True
-        self.signal.emit('OK')
+        self.signal.emit(information = 'OK')
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -28,6 +47,7 @@ class MainWindow(QMainWindow):
         self.longbutton = QPushButton('Start long (5 seconds) operation',self)
         self.label1 = QLabel('Continuos batch')
         self.label2 = QLabel('Long batch')
+        self.label3 = custom_label()
         self.vbox = QVBoxLayout()
         self.vbox.addWidget(self.longbutton)
         self.vbox.addWidget(self.label1)

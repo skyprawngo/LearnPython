@@ -12,8 +12,10 @@ from PySide6.QtWidgets import (QApplication, QFrame, QLabel, QMainWindow,
 class custom_widget(QWidget):
     def __init__(
         self,
+        parent
     ):
         super().__init__()
+        self._parent = parent
         self.setup_Ui()
         pass
     
@@ -30,7 +32,7 @@ class custom_widget(QWidget):
         print(self.emit_information2)
         
 class custom_btn(QPushButton):
-    signal = Signal()
+    signal = Signal(object, object)
     def __init__(
         self,
         i
@@ -64,7 +66,7 @@ class Ui_MainWindow(QMainWindow):
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
 
-        self.label_widget = custom_widget()
+        self.label_widget = custom_widget(self)
         self.verticalLayout.addWidget(self.label_widget)
         
         for i in range(4):
@@ -82,3 +84,4 @@ if __name__ == "__main__":
     window.show()
     app.exec()
     
+
