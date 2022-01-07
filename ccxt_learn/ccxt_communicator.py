@@ -71,5 +71,8 @@ class CCXT_Binance(object):
 
 
 if __name__ == "__main__":
-    a = CCXT_Binance().fetch_ohlcv("BTC/USDT")
+    a = CCXT_Binance().fetch_ticker("BTC/BUSD")
     print(a)
+    print(a["close"])
+    print(a["open"])
+    print(a["last"])
