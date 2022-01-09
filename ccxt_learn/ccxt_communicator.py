@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 import ccxt
+import getpass
+import pickle
 
 class CCXT_Binance(object):
     binance = ccxt.binance()
@@ -11,47 +13,39 @@ class CCXT_Binance(object):
         # self.enroll_account_txt()
         pass
         
-    def enroll_account_ui(self, api_key, secret):
-        self.binance = ccxt.binance(config={
+    def enroll_account_ui(api_key, secret):
+        CCXT_Binance.binance = ccxt.binance(config={
             'apiKey': api_key,
             'secret': secret
         })
         
-    def enroll_account_txt(self):
-        try:
-            account_path = os.path.normpath(os.path.join(os.getcwd(),"ccxt_learn/account.txt"))
-            with open(account_path) as reader:
-                lines = reader.readlines()
-                api_key = lines[0].strip() 
-                secret = lines[1].strip()
-            self.binance = ccxt.binance(config={
-                'apiKey': api_key,
-                'secret': secret
-            })
-        except:
-            print("acount.txt 파일에 apikey가 저장되어있지 않습니다!")
-            self.enroll_account_ui()
+    def enroll_account_txt():
+        username = getpass.getuser()
+        account_path = os.path.normpath(os.path.join("C:/Users",username,"AppData/Local/Stretegist/user_data.txt"))
+        with open(account_path, "rb") as reader:
+            data = pickle.load(reader)
+            key = [data["apikey"], data["secretkey"]]
+        CCXT_Binance.binance = ccxt.binance(config={
+            'apiKey': key[0],
+            'secret': key[1]
+        })
     
-    def save_account_ui2txt(self):
-        pass
-    
-    def load_markets(self):
-        markets= self.binance.load_markets()
+    def load_markets():
+        markets= CCXT_Binance.binance.load_markets()
         return markets
     
-    def fetch_ticker(self, coin_name):
-        btc = self.binance.fetch_ticker(coin_name)
+    def fetch_ticker(coin_name):
+        btc = CCXT_Binance.binance.fetch_ticker(coin_name)
         return btc
     
     def fetch_ohlcv(
-        self, 
         coin_name, 
         timeframe = "1m", 
         since = None, 
         limit = None, 
         params = {}
     ):
-        btc_ohlcv = self.binance.fetch_ohlcv(
+        btc_ohlcv = CCXT_Binance.binance.fetch_ohlcv(
             symbol = coin_name,
             timeframe = timeframe,
             since = since,
@@ -66,7 +60,7 @@ class CCXT_Binance(object):
         return df
     
     def fetch_balance(self):
-        balance = self.binance.fetch_balance()
+        balance = CCXT_Binance.binance.fetch_balance()
         return balance
 
 
@@ -76,3 +70,4 @@ if __name__ == "__main__":
     print(a["close"])
     print(a["open"])
     print(a["last"])
+    CCXT_Binance().enroll_account_txt()
