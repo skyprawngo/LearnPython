@@ -14,7 +14,6 @@ class NumberedButton(QtWidgets.QPushButton):
 
     def sendNum(self):
         self.sig.emit(str(self.num))
-        print(str(self.num))
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
