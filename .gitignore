@@ -7,3 +7,4 @@ ccxt_learn/acount.txt
 __pycache__
 *.pyc
 ccxt_learn/account.txt
+ccxt_learn/strategy/account.txt
