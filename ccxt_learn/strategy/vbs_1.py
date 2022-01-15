@@ -15,7 +15,7 @@ class Volatility_BS(object):
         high_past,
         low_past,
         
-        k = 0.5,
+        k = 0.56,
     ):
         super().__init__()
         self.ask = float(ask)
@@ -75,7 +75,7 @@ def dailydo():
     global binance
     ccxt_dataIO.get_account()
     target_market = "ETH/BUSD"
-    timeframe = "3m"
+    timeframe = "1h"
     
     timeframe_interval = ccxt_dataIO.parse_timeframe(timeframe)
     coin, fundamental = target_market.split("/")
@@ -88,10 +88,14 @@ def dailydo():
         if datetime.now().timestamp() >= endtimestmap:
             break
         sidecheck = binance.fetch_orders(symbol = target_market, since=None, limit = 1)[0]["side"]
+        print(sidecheck)
         last_ohlcv = binance.fetch_ohlcv(target_market, timeframe=timeframe, since=None, limit=2)
         open_now = last_ohlcv[-1][1]
         high_past = last_ohlcv[-2][2]
         low_past = last_ohlcv[-2][3]
+        print("open_now:", last_ohlcv[-1][1], end=",  ")
+        print("high_past:", last_ohlcv[-2][2], end=",  ")
+        print("low_past:", last_ohlcv[-2][3])
         
         
         while True:
@@ -99,25 +103,28 @@ def dailydo():
             now_ticker = binance.fetch_ticker(target_market)
             ask = now_ticker["ask"]
             timestamp = now_ticker["timestamp"]
+            
+            # print("check loop part:")
             VBS_strategy = Volatility_BS(
                 ask=ask,
                 open_now=open_now,
                 high_past=high_past,
                 low_past=low_past,
             )
+            # print(last_ohlcv[-1][0] + timeframe_interval*1000)
+            # print(timestamp)
+            # print("")
+            if last_ohlcv[-1][0] + timeframe_interval*1000 <= timestamp:
+                sell_or_not = True
+                break
+            
             buy_or_not = VBS_strategy.VBS_calc()
             if buy_or_not:
                 break
 
-            print(last_ohlcv[-1][0] + timeframe_interval*1000)
-            print(timestamp)
-            if last_ohlcv[-1][0] + timeframe_interval*1000 <= timestamp:
-                sell_or_not = True
-                break
                 
         # print("local time: ",starttimestamp/1000, end=",  ")
-        # print("open_now time:", last_ohlcv[-1][0]/1000, end=",  ")
-        # print("high_past time:", last_ohlcv[-2][0]/1000)
+        last_time = last_ohlcv[-1][0]
         
         if sell_or_not:
             if sidecheck == "sell":
@@ -125,8 +132,10 @@ def dailydo():
             balance = binance.fetch_balance()
             coin_wallet = balance[coin]
             funda_wallet = balance[fundamental]
+            print("sell func part:")
             print("coin-wallet: ", coin_wallet)
             print("base-wallet: ", funda_wallet)
+            print(f"TOTAL BALANCE: {coin_wallet['total']*ask+funda_wallet['total']}")
             if coin_wallet["free"] == 0:
                 print("None coin exist!")
                 continue
@@ -134,7 +143,9 @@ def dailydo():
                 binance.create_market_sell_order(target_market, coin_wallet["free"])
                 sidecheck = "sell"
                 sell_or_not = False
-                print("sell OCCUR!!!")
+                print("sell OCCUR!!!", end="\n \n")
+                time.sleep(3)
+                continue
         
         # print(ToF)
         if buy_or_not:
@@ -143,8 +154,10 @@ def dailydo():
             balance = binance.fetch_balance()
             coin_wallet = balance[coin]
             funda_wallet = balance[fundamental]
+            print("buy func part:")
             print("coin-wallet: ", coin_wallet)
             print("base-wallet: ", funda_wallet)
+            print(f"TOTAL BALANCE: {coin_wallet['total']*ask+funda_wallet['total']}")
             if funda_wallet["free"] == 0:
                 print("None Cash exist!")
                 continue
@@ -154,9 +167,10 @@ def dailydo():
                 binance.create_market_buy_order(target_market, amount)
                 sidecheck = "buy"
                 buy_or_not = False
-                print("buy OCCUR!!!")
-                
-        last_time = last_ohlcv[-1][0]
+                print("buy OCCUR!!!", end="\n \n")
+                time.sleep(3)
+                continue
+            
         # print("last_ohlcv time: ",last_ohlcv[-2][0]/1000, end=", ")
         # print("last_time: ", last_time/1000, end=", ")
         # print("now_time: ", datetime.now().timestamp())
