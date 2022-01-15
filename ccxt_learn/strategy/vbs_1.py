@@ -49,6 +49,7 @@ class ccxt_dataIO:
             'apiKey': api_key,
             'secret': secret
         })
+        
     def parse_timeframe(timeframe):
         amount = int(timeframe[0:-1])
         unit = timeframe[-1]
@@ -174,8 +175,6 @@ def dailydo():
         # print("last_ohlcv time: ",last_ohlcv[-2][0]/1000, end=", ")
         # print("last_time: ", last_time/1000, end=", ")
         # print("now_time: ", datetime.now().timestamp())
-    
-                
 
 if __name__ == "__main__":
     schedule.every(1).seconds.do(dailydo)
