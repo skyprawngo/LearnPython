@@ -7,36 +7,21 @@ import ccxt
 
 binance = ccxt.binance()
 
-class Volatility_BS(object):
-    def __init__(
-        self,
+class VBS_Strategy:
+    def VBS_calc(
         ask,
         open_now,
         high_past,
         low_past,
-        
         k = 0.54,
     ):
-        super().__init__()
-        self.ask = float(ask)
-        self.open_now = float(open_now)
-        self.high_past = float(high_past)
-        self.low_past = float(low_past)
-        
-        self.right_side = round(self.open_now + (self.high_past - self.low_past)*k, 2)
-        # print(f"{self.open_now} + ( {self.high_past} - {self.low_past} ) * 0.5")
-        # print(f"= {self.right_side}")
-        print(f"{self.ask} > {self.right_side} ?")
-    def VBS_calc(self):
-        if self.ask > self.right_side:
+        right_side = round(open_now + (high_past - low_past)*k, 2)
+        print(f"{ask} > {right_side} ?")
+        if ask > right_side:
             return True
         else: return False
         
-class ccxt_dataIO:
-    def __init__(
-        self,
-    ):
-        pass
+class Data_Process:
     def get_account():
         global binance
         file_path = os.path.dirname(os.path.abspath(__file__))
@@ -49,6 +34,7 @@ class ccxt_dataIO:
             'apiKey': api_key,
             'secret': secret
         })
+        
     def parse_timeframe(timeframe):
         amount = int(timeframe[0:-1])
         unit = timeframe[-1]
@@ -69,7 +55,50 @@ class ccxt_dataIO:
         else:
             raise print('timeframe unit {} is not supported'.format(unit))
         return amount * scale
-
+    
+    def buyprocess(
+        last_order_side,
+        ticker,
+        balance,
+    ):
+        if last_order_side == "buy":
+            return False
+        balance
+        if funda_wallet["free"] == 0:
+            print("None Cash exist!")
+            return False
+        else:
+            amount = funda_wallet["free"] / ask
+            time.sleep(0.3)
+            binance.create_market_buy_order(target_market, amount)
+            sidecheck = "buy"
+            buy_or_not = False
+            print("buy OCCUR!!!", end="\n \n")
+            time.sleep(3)
+            return True
+    
+    def sellprocess(
+        
+    ):
+        if sidecheck == "sell":
+            continue
+        balance = binance.fetch_balance()
+        coin_wallet = balance[coin]
+        funda_wallet = balance[fundamental]
+        print("sell func part:")
+        print("coin-wallet: ", coin_wallet)
+        print("base-wallet: ", funda_wallet)
+        print(f"TOTAL BALANCE: {coin_wallet['total']*ask+funda_wallet['total']}")
+        if coin_wallet["free"] == 0:
+            print("None coin exist!")
+            continue
+        else:
+            binance.create_market_sell_order(target_market, coin_wallet["free"])
+            sidecheck = "sell"
+            sell_or_not = False
+            print("sell OCCUR!!!", end="\n \n")
+            time.sleep(3)
+            continue
         
 def dailydo():
     global binance
