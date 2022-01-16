@@ -11,11 +11,11 @@ class VBS_Strategy:
     def VBS_calc(
         ask,
         open_now,
-        high_past,
-        low_past,
+        high_last,
+        low_last,
         k = 0.54,
     ):
-        right_side = round(open_now + (high_past - low_past)*k, 2)
+        right_side = round(open_now + (high_last - low_last)*k, 2)
         print(f"{ask} > {right_side} ?")
         if ask > right_side:
             return True
@@ -57,153 +57,88 @@ class Data_Process:
         return amount * scale
     
     def buyprocess(
-        last_order_side,
         ticker,
-        balance,
     ):
-        if last_order_side == "buy":
-            return False
-        balance
-        if funda_wallet["free"] == 0:
+        global binance
+        ask = ticker["ask"]
+        market = ticker["symbol"]
+        coin, funda = market.split("/")
+        
+        balance = binance.fetch_balance()
+        wallet_coin = balance[coin]
+        wallet_funda = balance[funda]
+        
+        if wallet_funda["free"] == 0:
             print("None Cash exist!")
             return False
         else:
-            amount = funda_wallet["free"] / ask
+            amount = wallet_funda["free"] / ask
             time.sleep(0.3)
-            binance.create_market_buy_order(target_market, amount)
-            sidecheck = "buy"
-            buy_or_not = False
+            binance.create_market_buy_order(market, amount)
             print("buy OCCUR!!!", end="\n \n")
             time.sleep(3)
             return True
     
     def sellprocess(
-        
+        ticker,
     ):
-        if sidecheck == "sell":
-            continue
+        global binance
+        market = ticker["symbol"]
+        coin, funda = market.split("/")
+        
         balance = binance.fetch_balance()
-        coin_wallet = balance[coin]
-        funda_wallet = balance[fundamental]
-        print("sell func part:")
-        print("coin-wallet: ", coin_wallet)
-        print("base-wallet: ", funda_wallet)
-        print(f"TOTAL BALANCE: {coin_wallet['total']*ask+funda_wallet['total']}")
-        if coin_wallet["free"] == 0:
-            print("None coin exist!")
-            continue
+        wallet_coin = balance[coin]
+        wallet_funda = balance[funda]
+        
+        if wallet_coin["free"] == 0:
+            print("None Coin exist!")
+            return False
         else:
-            binance.create_market_sell_order(target_market, coin_wallet["free"])
-            sidecheck = "sell"
-            sell_or_not = False
+            amount = wallet_coin["free"]
+            time.sleep(0.3)
+            binance.create_market_sell_order(market, amount)
             print("sell OCCUR!!!", end="\n \n")
             time.sleep(3)
-            continue
-        
+            return True
+    
 def dailydo():
     global binance
-    ccxt_dataIO.get_account()
-    target_market = "ETH/BUSD"
+    market = "ETH/BUSD"
     timeframe = "1h"
+    timeintervalms = Data_Process.parse_timeframe(timeframe)*1000
     
-    timeframe_interval = ccxt_dataIO.parse_timeframe(timeframe)
-    coin, fundamental = target_market.split("/")
-    starttimestamp = datetime.now().timestamp() * 1000
-    endtimestmap = starttimestamp + 7190000
-    last_time = starttimestamp
-    buy_or_not = False
-    sell_or_not = False
+    Data_Process.get_account()
     while True:
-        if datetime.now().timestamp() >= endtimestmap:
-            break
-        sidecheck = binance.fetch_orders(symbol = target_market, since=None, limit = 1)[0]["side"]
-        print(sidecheck)
-        last_ohlcv = binance.fetch_ohlcv(target_market, timeframe=timeframe, since=None, limit=2)
-        open_now = last_ohlcv[-1][1]
-        high_past = last_ohlcv[-2][2]
-        low_past = last_ohlcv[-2][3]
-        print("open_now:", last_ohlcv[-1][1], end=",  ")
-        print("high_past:", last_ohlcv[-2][2], end=",  ")
-        print("low_past:", last_ohlcv[-2][3])
-        
-        
+        ohlcv = binance.fetch_ohlcv(market, timeframe=timeframe, since=None, limit=2)
+        open_timestamp = ohlcv[-1][0]
+        open_now = ohlcv[-1][1]
+        high_last = ohlcv[-2][2]
+        low_last = ohlcv[-2][3]
         while True:
-            time.sleep(1.5)
-            now_ticker = binance.fetch_ticker(target_market)
-            ask = now_ticker["ask"]
-            timestamp = now_ticker["timestamp"]
-            
-            # print("check loop part:")
-            VBS_strategy = Volatility_BS(
-                ask=ask,
-                open_now=open_now,
-                high_past=high_past,
-                low_past=low_past,
+            ticker = binance.fetch_ticker("ETH/BUSD")
+            buy_or_not = VBS_Strategy.VBS_calc(
+                ask = ticker["ask"],
+                open_now = open_now,
+                high_last = high_last,
+                low_last = low_last,
             )
-            # print(last_ohlcv[-1][0] + timeframe_interval*1000)
-            # print(timestamp)
-            # print("")
-            if last_ohlcv[-1][0] + timeframe_interval*1000 <= timestamp:
-                sell_or_not = True
-                break
-            
-            buy_or_not = VBS_strategy.VBS_calc()
             if buy_or_not:
                 break
-
-                
-        # print("local time: ",starttimestamp/1000, end=",  ")
-        last_time = last_ohlcv[-1][0]
+            if ticker["timestamp"] > open_timestamp+timeintervalms:
+                break
+            time.sleep(1)
         
-        if sell_or_not:
-            if sidecheck == "sell":
-                continue
-            balance = binance.fetch_balance()
-            coin_wallet = balance[coin]
-            funda_wallet = balance[fundamental]
-            print("sell func part:")
-            print("coin-wallet: ", coin_wallet)
-            print("base-wallet: ", funda_wallet)
-            print(f"TOTAL BALANCE: {coin_wallet['total']*ask+funda_wallet['total']}")
-            if coin_wallet["free"] == 0:
-                print("None coin exist!")
-                continue
-            else:
-                binance.create_market_sell_order(target_market, coin_wallet["free"])
-                sidecheck = "sell"
-                sell_or_not = False
-                print("sell OCCUR!!!", end="\n \n")
-                time.sleep(3)
-                continue
-        
-        # print(ToF)
         if buy_or_not:
-            if sidecheck == "buy":
-                continue
-            balance = binance.fetch_balance()
-            coin_wallet = balance[coin]
-            funda_wallet = balance[fundamental]
-            print("buy func part:")
-            print("coin-wallet: ", coin_wallet)
-            print("base-wallet: ", funda_wallet)
-            print(f"TOTAL BALANCE: {coin_wallet['total']*ask+funda_wallet['total']}")
-            if funda_wallet["free"] == 0:
-                print("None Cash exist!")
-                continue
-            else:
-                amount = funda_wallet["free"] / ask
-                time.sleep(0.3)
-                binance.create_market_buy_order(target_market, amount)
-                sidecheck = "buy"
-                buy_or_not = False
-                print("buy OCCUR!!!", end="\n \n")
-                time.sleep(3)
-                continue
-            
-        # print("last_ohlcv time: ",last_ohlcv[-2][0]/1000, end=", ")
-        # print("last_time: ", last_time/1000, end=", ")
-        # print("now_time: ", datetime.now().timestamp())
-    
+            Data_Process.buyprocess(
+                ticker = ticker,
+            )
+        # last_order = binance.fetch_my_trades("ETH/BUSD", since=None, limit=1)
+        # print(last_order)
+        
+        # balance = binance.fetch_balance()
+        # print(balance)
+        time.sleep(1)
+    pass
                 
 
 if __name__ == "__main__":
