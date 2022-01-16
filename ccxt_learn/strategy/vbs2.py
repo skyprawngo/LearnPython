@@ -6,6 +6,7 @@ import time
 import ccxt
 
 binance = ccxt.binance()
+weight = 0
 
 class VBS_Strategy:
     def VBS_calc(
@@ -13,10 +14,10 @@ class VBS_Strategy:
         open_now,
         high_last,
         low_last,
-        k = 0.54,
+        k = 0.51,
     ):
         right_side = round(open_now + (high_last - low_last)*k, 2)
-        print(f"{ask} > {right_side} ?")
+        print(f"{ask} > {right_side} ? ")
         if ask > right_side:
             return True
         else: return False
@@ -59,7 +60,7 @@ class Data_Process:
     def buyprocess(
         ticker,
     ):
-        global binance
+        global binance, weight
         ask = ticker["ask"]
         market = ticker["symbol"]
         coin, funda = market.split("/")
@@ -73,16 +74,17 @@ class Data_Process:
             return False
         else:
             amount = wallet_funda["free"] / ask
-            time.sleep(0.3)
-            binance.create_market_buy_order(market, amount)
-            print("buy OCCUR!!!", end="\n \n")
+            order = binance.create_market_buy_order(market, amount)
             time.sleep(3)
+            print("TIME: ", end="")
+            print(ticker["datetime"])
+            print("buy OCCUR!!!", end="\n \n")
             return True
     
     def sellprocess(
         ticker,
     ):
-        global binance
+        global binance, weight
         market = ticker["symbol"]
         coin, funda = market.split("/")
         
@@ -95,8 +97,7 @@ class Data_Process:
             return False
         else:
             amount = wallet_coin["free"]
-            time.sleep(0.3)
-            binance.create_market_sell_order(market, amount)
+            order = binance.create_market_sell_order(market, amount)
             print("sell OCCUR!!!", end="\n \n")
             time.sleep(3)
             return True
@@ -106,39 +107,81 @@ def dailydo():
     market = "ETH/BUSD"
     timeframe = "1h"
     timeintervalms = Data_Process.parse_timeframe(timeframe)*1000
+    is_buy = False
+    is_sell = False
     
     Data_Process.get_account()
+    order_last = binance.fetch_my_trades(market, since=None, limit=1)
+    if order_last[-1]["side"] == "buy":
+        buyed = True
+        selled = False
+    elif order_last[-1]["side"] == "sell":
+        buyed = False
+        selled = True
+    
+    # timeframe당 한번 루프
     while True:
         ohlcv = binance.fetch_ohlcv(market, timeframe=timeframe, since=None, limit=2)
         open_timestamp = ohlcv[-1][0]
         open_now = ohlcv[-1][1]
         high_last = ohlcv[-2][2]
         low_last = ohlcv[-2][3]
+        ask_list = []
+        
+        # buy판단
         while True:
-            ticker = binance.fetch_ticker("ETH/BUSD")
-            buy_or_not = VBS_Strategy.VBS_calc(
+            ticker = binance.fetch_ticker(market)
+            ask_list.append(ticker["ask"])
+            if ticker["timestamp"] > open_timestamp+timeintervalms:
+                ohlcv = binance.fetch_ohlcv(market, timeframe=timeframe, since=None, limit=2)
+                open_timestamp = ohlcv[-1][0]
+                open_now = ohlcv[-1][1]
+                high_last = ohlcv[-2][2]
+                low_last = ohlcv[-2][3]
+    
+            is_buy = VBS_Strategy.VBS_calc(
                 ask = ticker["ask"],
                 open_now = open_now,
                 high_last = high_last,
                 low_last = low_last,
             )
-            if buy_or_not:
+            if is_buy:
+                buyed = Data_Process.buyprocess(
+                    ticker = ticker,
+                )
+                ask_buyed = ticker["ask"]
                 break
+            
+            time.sleep(5)
+        
+        # sell 판단
+        while True:
+            is_sell = False
+            ticker = binance.fetch_ticker(market)
+            
+            ask_list.append(ticker["ask"])
+                
             if ticker["timestamp"] > open_timestamp+timeintervalms:
+                is_sell = True
+            if ask_list[-3]>ask_list[-2]>ask_list[-1] and ask_list[-1]>ask_buyed:
+                is_sell = True
+                
+            if is_sell:
+                selled = Data_Process.sellprocess(
+                    ticker = ticker,
+                )
+                is_sell = False
                 break
+            
             time.sleep(1)
         
-        if buy_or_not:
-            Data_Process.buyprocess(
-                ticker = ticker,
-            )
-        # last_order = binance.fetch_my_trades("ETH/BUSD", since=None, limit=1)
-        # print(last_order)
-        
-        # balance = binance.fetch_balance()
-        # print(balance)
-        time.sleep(1)
-    pass
+        # sell 하면 남은 timeframe은 판단 안함
+        while True:
+            ticker = binance.fetch_ticker(market)
+            if ticker["timestamp"] > open_timestamp+timeintervalms:
+                break
+            time.sleep(10)
+            
                 
 
 if __name__ == "__main__":
@@ -146,5 +189,19 @@ if __name__ == "__main__":
     schedule.every(2).hours.do(dailydo)
     while True:
         schedule.run_pending()
-        
+    
+    
+    
+    # ticker = binance.fetch_ticker("ETH/BUSD")
+    # print(ticker)
+
+    # ohlcv = binance.fetch_ohlcv("ETH/BUSD", timeframe="1h", since=None, limit=2)
+    # # print(ohlcv)
+    
+    # Data_Process.get_account()
+    # last_order = binance.fetch_my_trades("ETH/BUSD", since=None, limit=1)
+    # print(last_order)
+    
+    # balance = binance.fetch_balance()
+    # print(balance)
     
