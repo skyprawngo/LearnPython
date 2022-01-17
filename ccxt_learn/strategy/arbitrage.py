@@ -1,7 +1,10 @@
 import os
-import schedule
-from datetime import datetime
+from re import A
 import time
+from datetime import datetime
+import schedule
+import pandas as pd
+import numpy as np
 import ccxt
 
 def get_account():
@@ -18,6 +21,15 @@ def get_account():
     return binance
         
 def dailydo():
+    ideal_rate = {
+        "BTC": 2,
+        "ETH": 2,
+        "BNB": 4,
+        "SOL": 1,
+    }
+    df_rate = pd.Series(ideal_rate, name="ideal_rate")
+    print(df_rate)
+    
     binance = get_account()
     current_balance = binance.fetch_balance()
     coin_list = []
@@ -25,7 +37,24 @@ def dailydo():
         if not current_balance["total"][wallet_coin] == 0:
             coin_list.append(wallet_coin)
     print(coin_list)
+    coin_list = list(set(ideal_rate.keys())|set(coin_list))
+    df_coin = pd.DataFrame(index=coin_list)
+    ask = []
+    amounts = []
+    for coin in coin_list:
+        if not coin == "BUSD":
+            ticker = binance.fetch_ticker(f"{coin}/BUSD")
+        else:
+            ticker["ask"] = 1
+        amount = current_balance[coin]["total"]
+        ask.append(ticker["ask"])
+        df_coin.loc[coin,"ask"] = ticker["ask"]
+        df_coin.loc[coin,"amount"] = amount
+    df = pd.concat([df_coin,df_rate], axis = 1)
     
+
+    print(df)
+        
     pass
 
 if __name__ == "__main__":
