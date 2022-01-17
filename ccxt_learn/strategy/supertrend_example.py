@@ -27,7 +27,7 @@ def get_historical_data(symbol, start_date):
         'secret': secret
     })
     
-    ohlcv = binance.fetch_ohlcv("BTC/BUSD", timeframe="1h")
+    ohlcv = binance.fetch_ohlcv("BNB/ETH", timeframe="4h")
     df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
     df.set_index('datetime', inplace=True)
@@ -83,7 +83,7 @@ def get_supertrend(high, low, close, lookback, multiplier):
     
     supertrend = pd.DataFrame(columns = [f'supertrend_{lookback}'])
     supertrend.iloc[:,0] = [x for x in final_bands['upper'] - final_bands['upper']]
-    
+
     for i in range(len(supertrend)):
         if i == 0:
             supertrend.iloc[i, 0] = 0

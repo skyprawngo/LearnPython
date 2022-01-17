@@ -102,7 +102,7 @@ class Data_Process:
             time.sleep(3)
             return True
     
-def dailydo():
+def minutedo():
     global binance
     market = "ETH/BUSD"
     timeframe = "1h"
@@ -185,8 +185,8 @@ def dailydo():
                 
 
 if __name__ == "__main__":
-    schedule.every(1).seconds.do(dailydo)
-    schedule.every(2).hours.do(dailydo)
+    schedule.every(1).seconds.do(minutedo)
+    schedule.every(2).hours.do(minutedo)
     while True:
         schedule.run_pending()
     

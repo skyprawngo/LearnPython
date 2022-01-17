@@ -18,6 +18,7 @@ class Data_IO:
                 'apiKey': api_key,
                 'secret': secret
             })
+            return binance
             
     def df_save(df, symbol):
         name = symbol.replace("/", "_")
@@ -33,26 +34,13 @@ class Data_IO:
         df = pd.read_csv(df_path)
         return df
 
-def get_historical_data(symbol, start_date):
-
-    file_path = os.path.dirname(os.path.abspath(__file__))
-    account_path = os.path.normpath(os.path.join(file_path,"account.txt"))
-    with open(account_path) as f:
-        lines = f.readlines()
-        api_key = lines[0].strip() 
-        secret = lines[1].strip() 
-    binance = ccxt.binance(config={
-        'apiKey': api_key,
-        'secret': secret
-    })
+def get_historical_data(symbol):
+    binance = Data_IO.get_account()
     
-    ohlcv = binance.fetch_ohlcv("BTC/BUSD", timeframe="1h")
+    ohlcv = binance.fetch_ohlcv(symbol, timeframe="1d")
     df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-    df.set_index('datetime', inplace=True)
     return df
-
-tsla = get_historical_data('TSLA', '2020-01-01')
 
 # SUPERTREND CALCULATION
 def get_supertrend(high, low, close, lookback, multiplier):
@@ -117,13 +105,13 @@ def get_supertrend(high, low, close, lookback, multiplier):
     
     supertrend = supertrend.set_index(upper_band.index)
     supertrend = supertrend.dropna()[1:]
-    
+    print(supertrend)
     # ST UPTREND/DOWNTREND
     
     upt = []
     dt = []
     close = close.iloc[len(close) - len(supertrend):]
-    print(supertrend)
+
     for i in range(len(supertrend)):
         if close[i] > supertrend.iloc[i, 0]:
             upt.append(supertrend.iloc[i, 0])
@@ -141,6 +129,7 @@ def get_supertrend(high, low, close, lookback, multiplier):
     return st, upt, dt
 
 def dailydo():
+    
     pass
 
 if __name__ == "__main__":
@@ -148,15 +137,15 @@ if __name__ == "__main__":
     # schedule.every(2).hours.do(dailydo)
     # while True:
     #     schedule.run_pending()
+    symbol = "BNB/BUSD"
+    df = get_historical_data(symbol)
+    Data_IO.df_save(df, symbol)
     
-    # binance = ccxt.binance()
-    # ohlcv = binance.fetch_ohlcv("BTC/BUSD", timeframe="1d")
-    # df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-    # df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
-    # Data_IO.df_save(df, "BTC/BUSD")
-    
-    df = Data_IO.df_load("BTC/BUSD")
-
+    df = Data_IO.df_load(symbol)
+    df.set_index('datetime', inplace=True)
     st = pd.DataFrame()
-    st['st'], st['s_upt'], st['st_dt'] = get_supertrend(df['high'], df['low'], df['close'], 10, 3)
-    
+    df['st'], df['s_upt'], df['st_dt'] = get_supertrend(df['high'], df['low'], df['close'], 10, 3)
+    print(df)
+    Data_IO.df_save(df, "asdf/asdf")
+    ticker = binance.fetch_ticker(symbol)
+    print(ticker)

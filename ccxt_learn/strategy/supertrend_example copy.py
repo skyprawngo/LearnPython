@@ -27,7 +27,7 @@ def get_historical_data(symbol, start_date):
         'secret': secret
     })
     
-    ohlcv = binance.fetch_ohlcv("BTC/BUSD", timeframe="1h")
+    ohlcv = binance.fetch_ohlcv("BNB/BUSD", timeframe="4h")
     df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
     df['datetime'] = pd.to_datetime(df['datetime'], unit='ms')
     df.set_index('datetime', inplace=True)
@@ -82,7 +82,7 @@ def get_supertrend(high, low, close, lookback, multiplier):
     
     supertrend = pd.DataFrame(columns = [f'supertrend_{lookback}'])
     supertrend.iloc[:,0] = [x for x in final_bands['upper'] - final_bands['upper']]
-    
+
     for i in range(len(supertrend)):
         if i == 0:
             supertrend.iloc[i, 0] = 0
@@ -103,8 +103,9 @@ def get_supertrend(high, low, close, lookback, multiplier):
     upt = []
     dt = []
     close = close.iloc[len(close) - len(supertrend):]
-
+    print(close)
     for i in range(len(supertrend)):
+        
         if close[i] > supertrend.iloc[i, 0]:
             upt.append(supertrend.iloc[i, 0])
             dt.append(np.nan)
@@ -167,7 +168,14 @@ def implement_st_strategy(prices, st):
 buy_price, sell_price, st_signal = implement_st_strategy(tsla['close'], tsla['st'])
 
 # SUPERTREND SIGNALS
-
+plt.plot(tsla['close'], linewidth = 2)
+plt.plot(tsla['st'], color = 'green', linewidth = 2, label = 'ST UPTREND')
+plt.plot(tsla['st_dt'], color = 'r', linewidth = 2, label = 'ST DOWNTREND')
+plt.plot(tsla.index, buy_price, marker = '^', color = 'green', markersize = 12, linewidth = 0, label = 'BUY SIGNAL')
+plt.plot(tsla.index, sell_price, marker = 'v', color = 'r', markersize = 12, linewidth = 0, label = 'SELL SIGNAL')
+plt.title('TSLA ST TRADING SIGNALS')
+plt.legend(loc = 'upper left')
+plt.show()
 
 
 # GENERATING STOCK POSITION
