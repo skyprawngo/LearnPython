@@ -22,10 +22,10 @@ def get_account():
         
 def dailydo():
     ideal_rate = {
-        "BTC": 2,
-        "ETH": 2,
-        "BNB": 4,
-        "SOL": 1,
+        "BTC": 0.2,
+        "ETH": 0.2,
+        "BNB": 0.5,
+        "SOL": 0.1,
     }
     df_rate = pd.Series(ideal_rate, name="ideal_rate")
     print(df_rate)
@@ -41,20 +41,29 @@ def dailydo():
     df_coin = pd.DataFrame(index=coin_list)
     ask = []
     amounts = []
+    total_price = 0
     for coin in coin_list:
         if not coin == "BUSD":
             ticker = binance.fetch_ticker(f"{coin}/BUSD")
         else:
+            ticker = {}
             ticker["ask"] = 1
         amount = current_balance[coin]["total"]
         ask.append(ticker["ask"])
         df_coin.loc[coin,"ask"] = ticker["ask"]
         df_coin.loc[coin,"amount"] = amount
+        df_coin.loc[coin,"value(USD)"] = ticker["ask"]*amount
+        total_price += ticker["ask"]*amount
     df = pd.concat([df_coin,df_rate], axis = 1)
     
-
+    current_rate = {}
+    for coin in coin_list:
+        current_rate[coin] = df_coin.loc[coin,"value(USD)"]/total_price
+    df.insert(3, "current_rate", current_rate.values())
+    
     print(df)
-        
+    print(total_price)    
+    
     pass
 
 if __name__ == "__main__":
