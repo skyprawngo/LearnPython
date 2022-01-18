@@ -28,7 +28,6 @@ def dailydo():
         "SOL": 0.1,
     }
     df_rate = pd.Series(ideal_rate, name="ideal_rate")
-    print(df_rate)
     
     binance = get_account()
     current_balance = binance.fetch_balance()
@@ -36,7 +35,7 @@ def dailydo():
     for wallet_coin in current_balance["total"]:
         if not current_balance["total"][wallet_coin] == 0:
             coin_list.append(wallet_coin)
-    print(coin_list)
+            
     coin_list = list(set(ideal_rate.keys())|set(coin_list))
     df_coin = pd.DataFrame(index=coin_list)
     ask = []
@@ -55,11 +54,13 @@ def dailydo():
         df_coin.loc[coin,"value(USD)"] = ticker["ask"]*amount
         total_price += ticker["ask"]*amount
     df = pd.concat([df_coin,df_rate], axis = 1)
-    
+    df.fillna(0)
     current_rate = {}
     for coin in coin_list:
         current_rate[coin] = df_coin.loc[coin,"value(USD)"]/total_price
     df.insert(3, "current_rate", current_rate.values())
+
+    df["difference"] = df["current_rate"] - df["ideal_rate"]
     
     print(df)
     print(total_price)    
