@@ -63,6 +63,7 @@ def dailydo():
     df["difference"] = df["current_rate"] - df["ideal_rate"]
     
     print(df)
+    
     print(total_price)    
     
     pass
