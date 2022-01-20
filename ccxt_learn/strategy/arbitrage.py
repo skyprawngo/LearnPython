@@ -61,7 +61,7 @@ def dailydo():
     df.insert(3, "current_rate", current_rate.values())
 
     df["difference"] = df["current_rate"] - df["ideal_rate"]
-    
+    df["transfer_price(USD)"] = 
     print(df)
     print(total_price)    
     
