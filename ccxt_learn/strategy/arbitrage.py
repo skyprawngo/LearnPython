@@ -60,16 +60,25 @@ def dailydo():
         current_rate[coin] = df_coin.loc[coin,"value(USD)"]/total_price
     df.insert(3, "current_rate", current_rate.values())
 
-    df["difference"] = df["current_rate"] - df["ideal_rate"]
-    df["transfer_price(USD)"] = 
+    df_transfer = pd.DataFrame()
+    df_transfer["tr_rate"] = df["current_rate"] - df["ideal_rate"]
     print(df)
-    print(total_price)    
-    
+    print(total_price)
+    for coin in df_transfer.index:
+        if df_transfer.loc[coin, "tr_rate"] > 0:
+            df_transfer.at[coin, "tr_price(USD)"] = df_transfer.loc[coin, "tr_rate"] * df.loc[coin, "amount"] * df.loc[coin, "ask"]
+        else :
+            df_transfer.at[coin, "tr_price(USD)"] = 0
+    tr_sum = df_transfer["tr_price(USD)"].sum()
+    print(df_transfer)
+    print(tr_sum)
     pass
 
 if __name__ == "__main__":
-    schedule.every(2).seconds.do(dailydo)
-    schedule.every().day.at("10:00").do(dailydo)
-    while True: 
-        schedule.run_pending() 
-        time.sleep(1)
+    # schedule.every(2).seconds.do(dailydo)
+    # schedule.every().day.at("10:00").do(dailydo)
+    # while True: 
+    #     schedule.run_pending() 
+    #     time.sleep(1)
+
+    dailydo()
