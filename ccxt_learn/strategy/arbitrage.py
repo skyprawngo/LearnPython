@@ -54,7 +54,7 @@ def dailydo():
         df_coin.loc[coin,"value(USD)"] = ticker["ask"]*amount
         total_price += ticker["ask"]*amount
     df = pd.concat([df_coin,df_rate], axis = 1)
-    df.fillna(0)
+    df = df.fillna(0)
     current_rate = {}
     for coin in coin_list:
         current_rate[coin] = df_coin.loc[coin,"value(USD)"]/total_price
