@@ -39,7 +39,6 @@ def dailydo():
     coin_list = list(set(ideal_rate.keys())|set(coin_list))
     df_BUSD = pd.DataFrame(index=coin_list)
     ask = []
-    amounts = []
     total_price = 0
     for coin in coin_list:
         if not coin == "BUSD":
@@ -69,10 +68,22 @@ def dailydo():
         df_transfer.at[coin, "tr_price(USD)"] = int(df_transfer.loc[coin, "tr_rate"] * total_price)
         if not df_transfer.loc[coin, "tr_price(USD)"] == 0:
             df_transfer.at[coin, "tr_amount"] = df_transfer.loc[coin, "tr_price(USD)"] / df.loc[coin, "ask"]
-
+            
+    df_transfer = df_transfer.fillna(0)
+    
+    funda = ["BNB", "BUSD"]
+    tr_number = 0
+    
+    for coin in df_transfer.index:
+        if df_transfer.loc[coin, "tr_price(USD)"] > 0 and not coin == "BNB" :
+            # 여기에 BNB로 코인 이동시키는 함수 작성
+            print(coin)
+    
+    for coin in df_transfer.index:
+        if df_transfer.loc[coin, "tr_price(USD)"] < 0 and not coin == "BNB" :
+            # 여기에 비율 모자란 코인들을 BNB월렛애서 매꿔주는 함수 작성
+            print(coin)
     print(df_transfer)
-    
-    
     pass
 
 if __name__ == "__main__":
