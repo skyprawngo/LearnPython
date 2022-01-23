@@ -8,7 +8,7 @@ import numpy as np
 import ccxt
 
 def get_account():
-    file_path = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     account_path = os.path.normpath(os.path.join(file_path,"account.txt"))
     with open(account_path) as f:
         lines = f.readlines()
@@ -20,7 +20,23 @@ def get_account():
     })
     return binance
 
-
+def make_dir_file(df = pd.DataFrame()):
+    file_path = os.path.dirname(os.path.abspath(__file__))
+    transaction_path = os.path.normpath(os.path.join(file_path,"transaction.csv"))
+    if not os.path.isfile(transaction_path):
+        df.to_csv(transaction_path)
+    if not df.empty:
+        df.to_csv(transaction_path)
+        
+def dailydo():
+    market = {"num": "BNB", "den": "ETH"}
+    make_dir_file()
+    binance = get_account()
+    current_balance = binance.fetch_balance()
+    print(current_balance[market["num"]])
+    print(current_balance[market["den"]])
+    
+    
 
 if __name__ == "__main__":
     # schedule.every(2).seconds.do(dailydo)
