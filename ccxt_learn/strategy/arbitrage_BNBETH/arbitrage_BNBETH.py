@@ -20,7 +20,7 @@ def get_account():
     })
     return binance
 
-def make_dir_file(df = pd.DataFrame()):
+def set_dir_file(df = pd.DataFrame()):
     file_path = os.path.dirname(os.path.abspath(__file__))
     transaction_path = os.path.normpath(os.path.join(file_path,"transaction.csv"))
     if not os.path.isfile(transaction_path):
@@ -30,7 +30,7 @@ def make_dir_file(df = pd.DataFrame()):
         
 def dailydo():
     market = {"num": "BNB", "den": "ETH"}
-    make_dir_file()
+    set_dir_file()
     binance = get_account()
     current_balance = binance.fetch_balance()
     print(current_balance[market["num"]])
