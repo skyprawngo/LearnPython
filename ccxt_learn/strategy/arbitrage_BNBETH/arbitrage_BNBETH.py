@@ -34,6 +34,7 @@ def dailydo():
     binance = get_account()
     current_balance = binance.fetch_balance()
     print(current_balance[market["num"]])
+    
     print(current_balance[market["den"]])
     
     
