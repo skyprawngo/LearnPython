@@ -36,6 +36,13 @@ def dailydo():
     print(current_balance[market["num"]])
     print(current_balance[market["den"]])
     
+    wlt_num = current_balance[market["num"]]
+    wlt_den = current_balance[market["den"]]
+    symbol = f"{market['num']}/{market['den']}"
+    ticker = binance.fetch_ticker(symbol)
+    print(ticker)
+    wlt_tot = wlt_num["total"] + ticker["ask"] * wlt_den["total"]
+    print(wlt_tot)
     
 
 if __name__ == "__main__":
