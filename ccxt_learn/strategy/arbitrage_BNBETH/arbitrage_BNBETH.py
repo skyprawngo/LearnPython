@@ -1,5 +1,4 @@
 import os
-from re import A
 import time
 from datetime import datetime
 import schedule
@@ -27,22 +26,48 @@ def set_dir_file(df = pd.DataFrame()):
         df.to_csv(transaction_path)
     if not df.empty:
         df.to_csv(transaction_path)
-        
+
+def get_dir_file():
+    file_path = os.path.dirname(os.path.abspath(__file__))
+    transaction_path = os.path.normpath(os.path.join(file_path,"transaction.csv"))
+    df = pd.read_csv(transaction_path)
+    return df
+
 def dailydo():
     market = {"num": "BNB", "den": "ETH"}
     set_dir_file()
     binance = get_account()
     current_balance = binance.fetch_balance()
-    print(current_balance[market["num"]])
-    print(current_balance[market["den"]])
+    print("BNB: ", current_balance[market["num"]])
+    print("ETH: ", current_balance[market["den"]])
     
     wlt_num = current_balance[market["num"]]
     wlt_den = current_balance[market["den"]]
     symbol = f"{market['num']}/{market['den']}"
     ticker = binance.fetch_ticker(symbol)
+    ticker.pop("info")
     print(ticker)
-    wlt_tot = wlt_num["total"] + ticker["ask"] * wlt_den["total"]
-    print(wlt_tot)
+    BNB_tot = wlt_num["total"] + ticker["ask"] * wlt_den["total"]
+    print(BNB_tot)
+    onetry_amount = BNB_tot / 10
+    print(round(onetry_amount, 3))
+    
+    df = get_dir_file()
+    if df.empty and ticker["ask"]*wlt_den["total"] > onetry_amount:
+        # order = binance.create_market_buy_order(symbol, amount=onetry_amount)
+        pass
+    elif ticker["ask"]*wlt_den["total"] < onetry_amount:
+        # order = binance.create_market_sell_order(symbol, amount=onetry_amount)
+        pass
+    
+    order = binance.fetch_order(id = 573295877, symbol=symbol)
+    order.pop("info")
+    print(order)
+    
+    # df_order = pd.DataFrame(order)
+    # df = df.append(df_order)
+    # print(df)
+    # set_dir_file(df)
     
 
 if __name__ == "__main__":
