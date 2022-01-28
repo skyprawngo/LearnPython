@@ -8,7 +8,7 @@ import numpy as np
 import ccxt
 
 def get_account():
-    file_path = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     account_path = os.path.normpath(os.path.join(file_path,"account.txt"))
     with open(account_path) as f:
         lines = f.readlines()
