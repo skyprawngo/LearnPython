@@ -33,9 +33,9 @@ def get_ohlcv_file(filename = "ohlcv.csv"):
     return df
 
 binance = get_account()
-
+symbol = "ETH/BUSD"
 if True:
-    ohlcv = binance.fetch_ohlcv("ETC/BUSD", timeframe="4h")
+    ohlcv = binance.fetch_ohlcv(symbol, timeframe="1h")
     df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df.set_index('timestamp', inplace=True)
     set_ohlcv_file(df)
@@ -55,11 +55,12 @@ for mnav in [10, 20, 30, 40, 50]:
         df.at[i,mnav] = sum(df.iloc[i-mnav:i, 3])/mnav
 
 df['close-50'] = df['close']-df[50]
-df['10-20'] = df[10]-df[20]
+df['close-10'] = df['close']-df[10]
 df["Buy"] = (df['close-50']>0)&(df['close-50'].shift()<0)
-df["Sell"] = (df['10-20']<0)&(df['10-20'].shift()>0)
+df["Sell"] = (df['close-10']<0)&(df['close-10'].shift()>0)&(df[10]>df[50])
 
-# set_ohlcv_file(df, "bos_BNB.csv")
+str_symbol = symbol.replace("/", "")
+set_ohlcv_file(df, f"bos_{str_symbol}.csv")
 
 profit = 0
 tradetime = 0
@@ -70,14 +71,15 @@ for i in range(len(df.index)):
         buyed = df.at[i, 'close']
     if df.at[i, 'Sell'] and buyed:
         selled = df.at[i, 'close']
-    if buyed and selled:
-        profit += selled-buyed
-        tradetime += 1
-        buyed = None
-        selled = None
+        if buyed and selled:
+            profit += selled-buyed
+            print(profit)
+            tradetime += 1
+            buyed = None
+            selled = None
         
-print(profit)
-print(tradetime)
+print("total profit: ",profit)
+print("trade time: ", tradetime)
 
 # 차트 설정하기 
 df.set_index('timestamp', inplace=True)
@@ -88,4 +90,4 @@ mpf.plot(df,
         style='yahoo', 
         figratio=(10,5),
         tight_layout=True) #좌우 공백 제거 
-plt.show()
+# plt.show()
